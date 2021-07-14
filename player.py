@@ -99,14 +99,46 @@ class Player():
 
     
     def think(self, mode, box_lists, agent_position, velocity):
-
+        import math
         # TODO
         # mode example: 'helicopter'
         # box_lists: an array of `BoxList` objects
         # agent_position example: [600, 250]
         # velocity example: 7
-
-        direction = -1
+        direction = None
+        x = agent_position[0]
+        y = agent_position[1]
+        min_des = math.inf
+        min_des_box = None
+        for box in box_lists:
+            if x < box.x and (box.x - x) < min_des:
+                min_des = box.x - x
+                min_des_box = box
+        if mode == 'helicopter':
+            if min_des_box is None:
+                #direction = -1
+                #if velocity == 0:
+                    #velocity = 1
+                if y + 45*velocity > CONFIG['HEIGHT']:
+                    direction = -1
+                elif y - 20*velocity < 0:
+                    direction = 1
+            elif y < min_des_box.gap_mid:
+                direction = 1
+        input_size = self.nn.inp_llen
+        input_layer = []
+        if min_des_box is not None:
+            input_layer = np.array([min_des_box.x, min_des_box.gap_mid, x, y, velocity/10, len(box_lists)]).reshape(6,1)
+        else:
+            input_layer = np.array([1, 1, x, y, velocity/10, len(box_lists)]).reshape(6,1)
+        norm = np.linalg.norm(input_layer)
+        normal_array = input_layer/norm
+        output = self.nn.forward(normal_array)
+        print(output)
+        if output[0][0] > 0.5:
+            direction = 1
+        else:
+            direction = -1
         return direction
 
     def collision_detection(self, mode, box_lists, camera):

@@ -32,12 +32,12 @@ class NeuralNetwork():
         a_s = []
         # hidden layer
         a_2 = np.zeros((self.hidden_llen, 1))
-        a_2, _ = self.activation(w_layer_2 @ x + b_2)
-        a_s.append(np.transpose(a_2).reshape(self.hidden_llen,1))
+        a_2 = self.activation(w_layer_2 @ x + b_2)
+        a_s.append(np.transpose(a_2)[0].reshape(self.hidden_llen,1))
 
         # output layer 
         a_3 = np.zeros((self.outp_llen, 1))
-        a_3, _ = self.activation(w_layer_3 @ a_2 + b_3)
-        a_s.append(np.transpose(a_3).reshape(self.outp_llen,1))
+        a_3 = self.activation(w_layer_3 @ a_2 + b_3)
+        a_s.append(np.transpose(a_3)[0].reshape(self.outp_llen,1))
 
-        return a_3
+        return a_s[-1]
