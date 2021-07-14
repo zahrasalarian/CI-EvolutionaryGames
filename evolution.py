@@ -18,8 +18,32 @@ class Evolution():
 
         # TODO
         # child: an object of class `Player`
+        import random
+        noise = np.random.normal(0,1,1)
+        print(noise)
+        prob = 0.2
+        
+        # w1
+        for index, value in np.ndenumerate(child.nn.w[0]):            
+            rand = random.uniform(0, 1)
+            if rand < prob:
+                child.nn.w[0][index] = value + noise
+        # w2 
+        for index, value in np.ndenumerate(child.nn.w[1]):            
+            rand = random.uniform(0, 1)
+            if rand < prob:
+                child.nn.w[1][index] = value + noise
+        # b1
+        for index, value in np.ndenumerate(child.nn.b[0]):            
+            rand = random.uniform(0, 1)
+            if rand < prob:
+                child.nn.b[0][index] = value + noise
+        # b2
+        for index, value in np.ndenumerate(child.nn.b[1]):            
+            rand = random.uniform(0, 1)
+            if rand < prob:
+                child.nn.b[1][index] = value + noise
         return child
-        #pass
 
 
     def generate_new_population(self, num_players, prev_players=None):
