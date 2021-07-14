@@ -20,8 +20,7 @@ class Evolution():
         # child: an object of class `Player`
         import random
         noise = np.random.normal(0,1,1)
-        print(noise)
-        prob = 0.2
+        prob = 0.34
         
         # w1
         for index, value in np.ndenumerate(child.nn.w[0]):            
@@ -47,29 +46,28 @@ class Evolution():
 
 
     def generate_new_population(self, num_players, prev_players=None):
-
+        import random, copy
         # in first generation, we create random players
         if prev_players is None:
             return [Player(self.mode) for _ in range(num_players)]
 
         else:
+            children = []
             # TODO
             # num_players example: 150
             # prev_players: an array of `Player` objects
-            import heapq, copy
-            top_k =[]
-            heap = []
-            children = []
-            for i in range(len(prev_players)):
-                heapq.heappush(heap,(-prev_players[i].fitness, i))
+            if num_players > len(prev_players):
+                num_players = len(prev_players)
+            max = sum(prev_player.fitness for prev_player in prev_players)
             for _ in range(num_players):
-                top_k.append(heapq.heappop(heap)[1])
-            for i in range(len(top_k)):
-                top_k[i] = prev_players[top_k[i]]
-            for player in top_k:
-                child = copy.deepcopy(player)
-                children.append(self.mutate(child))
-
+                pick = random.uniform(0, max)
+                current = 0
+                for prev_player in prev_players:
+                    current += prev_player.fitness
+                    if current > pick:
+                        m_child = copy.deepcopy(prev_player)
+                        children.append(self.mutate(m_child))
+                        break
             # TODO (additional): a selection method other than `fitness proportionate`
             # TODO (additional): implementing crossover
 

@@ -90,16 +90,16 @@ class Player():
 
         layer_sizes = None
         if mode == 'gravity':
-            layer_sizes = [6, 20, 1]
+            layer_sizes = [8, 20, 1]
         elif mode == 'helicopter':
-            layer_sizes = [6, 20, 1]
+            layer_sizes = [8, 20, 1]
         elif mode == 'thrust':
-            layer_sizes = [6, 20, 1]
+            layer_sizes = [8, 20, 1]
         return layer_sizes
 
     
     def think(self, mode, box_lists, agent_position, velocity):
-        import math
+        import math, heapq, copy
         # TODO
         # mode example: 'helicopter'
         # box_lists: an array of `BoxList` objects
@@ -108,19 +108,23 @@ class Player():
         direction = None
         x = agent_position[0]
         y = agent_position[1]
-        min_des = math.inf
-        min_des_box = None
-        for box in box_lists:
-            if x < box.x and (box.x - x) < min_des:
-                min_des = box.x - x
-                min_des_box = box
+        nearest_boxes =[]
+        heap = []
+        children = []
+        for i in range(len(box_lists)):
+            if (box_lists[i].x - x) > 0:
+                heapq.heappush(heap,(-(box_lists[i].x - x), i))
+        if len(heap) > 2:
+            for _ in range(2):
+                nearest_boxes.append(heapq.heappop(heap)[1])
+            for i in range(len(nearest_boxes)):
+                nearest_boxes[i] = box_lists[nearest_boxes[i]]
 
-        input_size = self.nn.inp_llen
         input_layer = []
-        if min_des_box is not None:
-            input_layer = np.array([min_des_box.x - x, min_des_box.gap_mid - y, x, y, velocity/10, len(box_lists)]).reshape(6,1)
+        if nearest_boxes is not None and len(nearest_boxes) >= 2:
+            input_layer = np.array([nearest_boxes[0].x - x, nearest_boxes[0].gap_mid - y, nearest_boxes[1].x - x, nearest_boxes[1].gap_mid - y, y,  velocity, math.sqrt(((nearest_boxes[0].x - x)**2)+((nearest_boxes[0].gap_mid - y)**2)), math.sqrt(((nearest_boxes[1].x - x)**2)+((nearest_boxes[1].gap_mid - y)**2))]).reshape(8,1)
         else:
-            input_layer = np.array([1, 1, x, y, velocity/10, len(box_lists)]).reshape(6,1)
+            input_layer = np.array([1, 1, x, y, velocity, len(box_lists), 1, 1]).reshape(8,1)
         norm = np.linalg.norm(input_layer)
         normal_array = input_layer/norm
         output = self.nn.forward(normal_array)
