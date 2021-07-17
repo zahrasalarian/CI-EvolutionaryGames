@@ -105,7 +105,7 @@ class Player():
         # box_lists: an array of `BoxList` objects
         # agent_position example: [600, 250]
         # velocity example: 7
-  
+
         direction = -1
         x = agent_position[0]
         y = agent_position[1]
@@ -119,11 +119,42 @@ class Player():
             if len(box_lists) >= 2:
                 input_layer[4, 0] = (y - box_lists[1].gap_mid) / CONFIG["HEIGHT"]
             input_layer[5, 0] =((CONFIG["HEIGHT"] - y) / CONFIG["HEIGHT"])*-1
-            normal_array = input_layer/max(input_layer)
-            output = self.nn.forward(normal_array)
+            output = self.nn.forward(input_layer)
             if output > 0.5:
                 direction = 1
-        return direction
+            return direction
+        
+        elif mode == 'gravity':
+            input_layer = np.zeros((6, 1))
+            input_layer[0, 0] = velocity / 10
+            input_layer[1, 0] = y / CONFIG["HEIGHT"]
+            if len(box_lists) >= 1:
+                input_layer[2, 0] = (y - box_lists[0].gap_mid) / CONFIG["HEIGHT"]
+                input_layer[3, 0] = (x - box_lists[0].x) / CONFIG["WIDTH"]
+            if len(box_lists) >= 2:
+                input_layer[4, 0] = (y - box_lists[1].gap_mid) / CONFIG["HEIGHT"]
+            input_layer[5, 0] =((CONFIG["HEIGHT"] - y) / CONFIG["HEIGHT"])*-1
+            output = self.nn.forward(input_layer)
+            if output > 0.5:
+                direction = 1
+            return direction
+        
+        elif mode == 'thrust':
+            input_layer = np.zeros((6, 1))
+            input_layer[0, 0] = velocity / 10
+            input_layer[1, 0] = y / CONFIG["HEIGHT"]
+            if len(box_lists) >= 1:
+                input_layer[2, 0] = (y - box_lists[0].gap_mid) / CONFIG["HEIGHT"]
+                input_layer[3, 0] = (x - box_lists[0].x) / CONFIG["WIDTH"]
+            if len(box_lists) >= 2:
+                input_layer[4, 0] = (y - box_lists[1].gap_mid) / CONFIG["HEIGHT"]
+            input_layer[5, 0] =((CONFIG["HEIGHT"] - y) / CONFIG["HEIGHT"])*-1
+            output = self.nn.forward(input_layer)
+            if output > 0.7:
+                direction = 1
+            elif output > 0.35:
+                direction = 0
+            return direction
 
     def collision_detection(self, mode, box_lists, camera):
         if mode == 'helicopter':
