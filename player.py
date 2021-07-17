@@ -90,11 +90,11 @@ class Player():
 
         layer_sizes = None
         if mode == 'gravity':
-            layer_sizes = [8, 20, 1]
+            layer_sizes = [6, 20, 1]
         elif mode == 'helicopter':
-            layer_sizes = [8, 20, 1]
+            layer_sizes = [6, 20, 1]
         elif mode == 'thrust':
-            layer_sizes = [8, 20, 1]
+            layer_sizes = [6, 20, 1]
         return layer_sizes
 
     
@@ -105,34 +105,24 @@ class Player():
         # box_lists: an array of `BoxList` objects
         # agent_position example: [600, 250]
         # velocity example: 7
-        direction = None
+  
+        direction = -1
         x = agent_position[0]
         y = agent_position[1]
-        nearest_boxes =[]
-        heap = []
-        children = []
-        for i in range(len(box_lists)):
-            if (box_lists[i].x - x) > 0:
-                heapq.heappush(heap,(-(box_lists[i].x - x), i))
-        if len(heap) > 2:
-            for _ in range(2):
-                nearest_boxes.append(heapq.heappop(heap)[1])
-            for i in range(len(nearest_boxes)):
-                nearest_boxes[i] = box_lists[nearest_boxes[i]]
-
-        input_layer = []
-        if nearest_boxes is not None and len(nearest_boxes) >= 2:
-            input_layer = np.array([nearest_boxes[0].x - x, nearest_boxes[0].gap_mid - y, nearest_boxes[1].x - x, nearest_boxes[1].gap_mid - y, y,  velocity, math.sqrt(((nearest_boxes[0].x - x)**2)+((nearest_boxes[0].gap_mid - y)**2)), math.sqrt(((nearest_boxes[1].x - x)**2)+((nearest_boxes[1].gap_mid - y)**2))]).reshape(8,1)
-        else:
-            input_layer = np.array([1, 1, x, y, velocity, len(box_lists), 1, 1]).reshape(8,1)
-        norm = np.linalg.norm(input_layer)
-        normal_array = input_layer/norm
-        output = self.nn.forward(normal_array)
-        #print(output)
-        if output[0][0] > 0.5:
-            direction = 1
-        else:
-            direction = -1
+        if mode == 'helicopter':
+            input_layer = np.zeros((6, 1))
+            input_layer[0, 0] = velocity / 10
+            input_layer[1, 0] = y / CONFIG["HEIGHT"]
+            if len(box_lists) >= 1:
+                input_layer[2, 0] = (y - box_lists[0].gap_mid) / CONFIG["HEIGHT"]
+                input_layer[3, 0] = (x - box_lists[0].x) / CONFIG["WIDTH"]
+            if len(box_lists) >= 2:
+                input_layer[4, 0] = (y - box_lists[1].gap_mid) / CONFIG["HEIGHT"]
+            input_layer[5, 0] =((CONFIG["HEIGHT"] - y) / CONFIG["HEIGHT"])*-1
+            normal_array = input_layer/max(input_layer)
+            output = self.nn.forward(normal_array)
+            if output > 0.5:
+                direction = 1
         return direction
 
     def collision_detection(self, mode, box_lists, camera):

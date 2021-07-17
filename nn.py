@@ -11,7 +11,7 @@ class NeuralNetwork():
         self.hidden_llen = layer_sizes[1]
         self.outp_llen = layer_sizes[2]
         self.b = [np.zeros(self.hidden_llen), np.zeros(self.outp_llen)] 
-        self.w = [np.random.randn(self.hidden_llen, self.inp_llen), np.random.randn(self.outp_llen, self.hidden_llen)]
+        self.w = [np.random.normal(0, 1, size=(self.hidden_llen, self.inp_llen)), np.random.normal(0, 1, size=(self.outp_llen, self.hidden_llen))]
 
     def activation(self, x):
         
@@ -33,11 +33,16 @@ class NeuralNetwork():
         # hidden layer
         a_2 = np.zeros((self.hidden_llen, 1))
         a_2 = self.activation((w_layer_2 @ x + b_2))
+        #print('********************')
+        #print(np.transpose(a_2))
+        #print('********************')
+
         a_s.append(np.transpose(a_2)[0].reshape(self.hidden_llen,1))
+        #print(a_s[0])
 
         # output layer 
         a_3 = np.zeros((self.outp_llen, 1))
-        a_3 = self.activation(w_layer_3 @ a_2 + b_3)
+        a_3 = self.activation(w_layer_3 @ a_s[0] + b_3)
         a_s.append(np.transpose(a_3)[0].reshape(self.outp_llen,1))
 
         return a_s[-1]

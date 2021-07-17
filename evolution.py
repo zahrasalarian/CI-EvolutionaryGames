@@ -19,29 +19,28 @@ class Evolution():
         # TODO
         # child: an object of class `Player`
         import random
-        noise = np.random.normal(0,1,1)
-        prob = 0.34
+        prob = 0.9
         
         # w1
-        for index, value in np.ndenumerate(child.nn.w[0]):            
-            rand = random.uniform(0, 1)
-            if rand < prob:
-                child.nn.w[0][index] = value + noise
+        noise = np.random.normal(0,0.5,child.nn.w[0].shape)
+        rand = random.uniform(0, 1)
+        if rand < prob:
+            child.nn.w[0] += noise
         # w2 
-        for index, value in np.ndenumerate(child.nn.w[1]):            
-            rand = random.uniform(0, 1)
-            if rand < prob:
-                child.nn.w[1][index] = value + noise
+        noise = np.random.normal(0,0.5,child.nn.w[1].shape)
+        rand = random.uniform(0, 1)
+        if rand < prob:
+            child.nn.w[1] += noise
         # b1
-        for index, value in np.ndenumerate(child.nn.b[0]):            
-            rand = random.uniform(0, 1)
-            if rand < prob:
-                child.nn.b[0][index] = value + noise
+        noise = np.random.normal(0,0.5,child.nn.b[0].shape)
+        rand = random.uniform(0, 1)
+        if rand < prob:
+            child.nn.b[0] += noise
         # b2
-        for index, value in np.ndenumerate(child.nn.b[1]):            
-            rand = random.uniform(0, 1)
-            if rand < prob:
-                child.nn.b[1][index] = value + noise
+        noise = np.random.normal(0,0.5,child.nn.b[1].shape)
+        rand = random.uniform(0, 1)
+        if rand < prob:
+            child.nn.b[1] += noise
         return child
 
 
@@ -52,22 +51,16 @@ class Evolution():
             return [Player(self.mode) for _ in range(num_players)]
 
         else:
+            # Q tournoment
+            Q = 5
             children = []
             # TODO
             # num_players example: 150
             # prev_players: an array of `Player` objects
-            if num_players > len(prev_players):
-                num_players = len(prev_players)
-            max = sum(prev_player.fitness for prev_player in prev_players)
             for _ in range(num_players):
-                pick = random.uniform(0, max)
-                current = 0
-                for prev_player in prev_players:
-                    current += prev_player.fitness
-                    if current > pick:
-                        m_child = copy.deepcopy(prev_player)
-                        children.append(self.mutate(m_child))
-                        break
+                random_players = random.sample(prev_players, Q)
+                best_player = max(random_players, key=lambda x: x.fitness)
+                children.append(self.mutate(copy.deepcopy(best_player)))
             # TODO (additional): a selection method other than `fitness proportionate`
             # TODO (additional): implementing crossover
 
@@ -75,15 +68,33 @@ class Evolution():
             return new_players
 
     def next_population_selection(self, players, num_players):
-        import heapq
-        top_k =[]
-        heap = []
-        for i in range(len(players)):
-            heapq.heappush(heap,(-players[i].fitness, i))
+        import heapq, random, copy
+        #top_k =[]
+        #heap = []
+        #for i in range(len(players)):
+        #    heapq.heappush(heap,(-players[i].fitness, i))
+        #for _ in range(num_players):
+        #    top_k.append(heapq.heappop(heap)[1])
+        #for i in range(len(top_k)):
+        #    top_k[i] = players[top_k[i]]
+        
+        next_pop = []
+            # TODO
+            # num_players example: 150
+            # prev_players: an array of `Player` objects
+        if num_players > len(players):
+            num_players = len(players)
+        max = sum(player.fitness for player in players)
         for _ in range(num_players):
-            top_k.append(heapq.heappop(heap)[1])
-        for i in range(len(top_k)):
-            top_k[i] = players[top_k[i]]
+            pick = random.uniform(0, max)
+            current = 0
+            for prev_player in players:
+                current += prev_player.fitness
+                if current > pick:
+                    m_child = copy.deepcopy(prev_player)
+                    next_pop.append(self.mutate(m_child))
+                    break
+
         # TODO
         # num_players example: 100
         # players: an array of `Player` objects
@@ -91,4 +102,4 @@ class Evolution():
         # TODO (additional): a selection method other than `top-k`
         # TODO (additional): plotting
 
-        return top_k
+        return next_pop
