@@ -18,3 +18,6 @@ Special thanks to:
 - [Matin Tavakoli](https://github.com/MatinTavakoli/) <br>
 - [Parnian Rad](https://github.com/Parnian-Rad)
 
+## CI-EvolutionaryGames
+In this project, I (Zahra Salarian) implemented an evolutionary algorithm that has the capability of learning 3 different modes of playing this game, and when it has learned them after several generations of playing, it becomes unbeatable and can play forever.
+
